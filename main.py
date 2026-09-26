@@ -44,7 +44,7 @@ def keep_alive():
 # --- End Flask Keep Alive ---
 
 # --- Configuration ---
-TOKEN = '8874296819:AAEPgBobGZl1O0SjK0buMmGLm8xHahdekb4' 
+TOKEN = '8874296819:AAH-q_vaePDjO7IjddariHucxKZzsIlTChEc' 
 OWNER_ID = 8659378243
 ADMIN_ID = 8659378243
 YOUR_USERNAME = '@lexivx' 
@@ -1299,8 +1299,8 @@ def _logic_send_welcome(message):
         bot.send_video(chat_id, video=MENU_VIDEO, caption=welcome_msg_text, reply_markup=main_reply_markup, parse_mode='Markdown')
     except Exception as e:
         logger.error(f"Error sending welcome to {user_id}: {e}", exc_info=True)
-        try: bot.send_video(chat_id, video=MENU_VIDEO, caption=welcome_msg_text, reply_markup=main_reply_markup, parse_mode='Markdown')
-        except Exception as fallback_e: logger.error(f"Fallback send_video failed for {user_id}: {fallback_e}")
+        try: bot.send_message(chat_id, text=welcome_msg_text, reply_markup=main_reply_markup, parse_mode='Markdown')
+        except Exception as fallback_e: logger.error(f"Fallback send_message failed for {user_id}: {fallback_e}")
 
 def _logic_updates_channel(message):
     markup = types.InlineKeyboardMarkup()
