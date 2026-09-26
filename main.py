@@ -117,23 +117,6 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# --- Command Button Layouts (ReplyKeyboardMarkup) ---
-COMMAND_BUTTONS_LAYOUT_USER_SPEC = [
-    ["📢 Updates Channel"],
-    ["📤 Upload File", "📂 Check Files"],
-    ["⚡ Bot Speed", "📊 Statistics"],
-    ["📤 Send Command", "📞 Contact Owner"]
-]
-ADMIN_COMMAND_BUTTONS_LAYOUT_USER_SPEC = [
-    ["📢 Updates Channel"],
-    ["📤 Upload File", "📂 Check Files"],
-    ["⚡ Bot Speed", "📊 Statistics"],
-    ["💳 Subscriptions", "📢 Broadcast"],
-    ["🔒 Lock Bot", "🟢 Running All Code"],
-    ["📤 Send Command", "👑 Admin Panel"],
-    ["📞 Contact Owner"]
-]
-
 # --- Database Setup ---
 def init_db():
     """Initialize the database with required tables"""
@@ -870,16 +853,16 @@ def remove_admin_db(admin_id):
         except Exception as e: logger.error(f"❌ Unexpected error removing admin {admin_id}: {e}", exc_info=True); return False
         finally: conn.close()
 
-# --- Menu creation (Inline and ReplyKeyboards) ---
+# --- Menu creation (InlineKeyboards Only) ---
 def create_main_menu_inline(user_id):
     markup = types.InlineKeyboardMarkup(row_width=2)
     buttons = [
         types.InlineKeyboardButton('🔴 📢 Updates Channel', url=UPDATE_CHANNEL, style='primary'),
-        types.InlineKeyboardButton('🔵 📤 Upload File', callback_data='upload', style='primary'),
-        types.InlineKeyboardButton('🟢 📂 Check Files', callback_data='check_files', style='success'),
-        types.InlineKeyboardButton('🟡 ⚡ Bot Speed', callback_data='speed', style='primary'),
-        types.InlineKeyboardButton('🟣 📤 Send Command', callback_data='send_command', style='primary'),
-        types.InlineKeyboardButton('🟠 📞 Contact Owner', url=f'https://t.me/{YOUR_USERNAME.replace("@", "")}', style='primary')
+        types.InlineKeyboardButton('🟠 📤 Upload File', callback_data='upload', style='primary'),
+        types.InlineKeyboardButton('🟡 📂 Check Files', callback_data='check_files', style='success'),
+        types.InlineKeyboardButton('🟢 ⚡ Bot Speed', callback_data='speed', style='primary'),
+        types.InlineKeyboardButton('🔵 📤 Send Command', callback_data='send_command', style='primary'),
+        types.InlineKeyboardButton('🟣 📞 Contact Owner', url=f'https://t.me/{YOUR_USERNAME.replace("@", "")}', style='primary')
     ]
 
     if user_id in admin_ids:
@@ -888,9 +871,9 @@ def create_main_menu_inline(user_id):
             types.InlineKeyboardButton('⚪ 📊 Statistics', callback_data='stats', style='primary'),
             types.InlineKeyboardButton('⚫ 🔒 Lock Bot' if not bot_locked else '⚫ 🔓 Unlock Bot',
                                      callback_data='lock_bot' if not bot_locked else 'unlock_bot', style='danger' if not bot_locked else 'success'),
-            types.InlineKeyboardButton('🔴 📢 Broadcast', callback_data='broadcast', style='danger'),
-            types.InlineKeyboardButton('👑 Admin Panel', callback_data='admin_panel', style='primary'),
-            types.InlineKeyboardButton('🟢 Run All User Scripts', callback_data='run_all_scripts', style='success')
+            types.InlineKeyboardButton('🟥 📢 Broadcast', callback_data='broadcast', style='danger'),
+            types.InlineKeyboardButton('🟦 👑 Admin Panel', callback_data='admin_panel', style='primary'),
+            types.InlineKeyboardButton('🟩 🏃 Run All Scripts', callback_data='run_all_scripts', style='success')
         ]
         markup.add(buttons[0])
         markup.add(buttons[1], buttons[2])
@@ -909,62 +892,55 @@ def create_main_menu_inline(user_id):
         markup.add(buttons[5])
     return markup
 
-def create_reply_keyboard_main_menu(user_id):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-    layout_to_use = ADMIN_COMMAND_BUTTONS_LAYOUT_USER_SPEC if user_id in admin_ids else COMMAND_BUTTONS_LAYOUT_USER_SPEC
-    for row_buttons_text in layout_to_use:
-        markup.add(*[types.KeyboardButton(text) for text in row_buttons_text])
-    return markup
-
 def create_control_buttons(script_owner_id, file_name, is_running=True):
     markup = types.InlineKeyboardMarkup(row_width=2)
     if is_running:
         markup.row(
-            types.InlineKeyboardButton("🔴 Stop", callback_data=f'stop_{script_owner_id}_{file_name}', style='danger'),
-            types.InlineKeyboardButton("🔄 Restart", callback_data=f'restart_{script_owner_id}_{file_name}', style='primary')
+            types.InlineKeyboardButton("🔴 🛑 Stop", callback_data=f'stop_{script_owner_id}_{file_name}', style='danger'),
+            types.InlineKeyboardButton("🔵 🔄 Restart", callback_data=f'restart_{script_owner_id}_{file_name}', style='primary')
         )
         markup.row(
-            types.InlineKeyboardButton("🗑️ Delete", callback_data=f'delete_{script_owner_id}_{file_name}', style='danger'),
-            types.InlineKeyboardButton("📜 Logs", callback_data=f'logs_{script_owner_id}_{file_name}', style='primary')
+            types.InlineKeyboardButton("🟠 🗑️ Delete", callback_data=f'delete_{script_owner_id}_{file_name}', style='danger'),
+            types.InlineKeyboardButton("🟣 📜 Logs", callback_data=f'logs_{script_owner_id}_{file_name}', style='primary')
         )
     else:
         markup.row(
-            types.InlineKeyboardButton("🟢 Start", callback_data=f'start_{script_owner_id}_{file_name}', style='success'),
-            types.InlineKeyboardButton("🗑️ Delete", callback_data=f'delete_{script_owner_id}_{file_name}', style='danger')
+            types.InlineKeyboardButton("🟢 ▶️ Start", callback_data=f'start_{script_owner_id}_{file_name}', style='success'),
+            types.InlineKeyboardButton("🟠 🗑️ Delete", callback_data=f'delete_{script_owner_id}_{file_name}', style='danger')
         )
         markup.row(
-            types.InlineKeyboardButton("📜 View Logs", callback_data=f'logs_{script_owner_id}_{file_name}', style='primary')
+            types.InlineKeyboardButton("🟣 📜 View Logs", callback_data=f'logs_{script_owner_id}_{file_name}', style='primary')
         )
-    markup.add(types.InlineKeyboardButton("🔙 Back to Files", callback_data='check_files'))
+    markup.add(types.InlineKeyboardButton("⚪ 🔙 Back to Files", callback_data='check_files'))
     return markup
 
 def create_admin_panel():
     markup = types.InlineKeyboardMarkup(row_width=2)
     markup.row(
-        types.InlineKeyboardButton('➕ Add Admin', callback_data='add_admin', style='success'),
-        types.InlineKeyboardButton('➖ Remove Admin', callback_data='remove_admin', style='danger')
+        types.InlineKeyboardButton('🟢 ➕ Add Admin', callback_data='add_admin', style='success'),
+        types.InlineKeyboardButton('🔴 ➖ Remove Admin', callback_data='remove_admin', style='danger')
     )
-    markup.row(types.InlineKeyboardButton('📋 List Admins', callback_data='list_admins', style='primary'))
-    markup.row(types.InlineKeyboardButton('🔙 Back to Main', callback_data='back_to_main'))
+    markup.row(types.InlineKeyboardButton('🔵 📋 List Admins', callback_data='list_admins', style='primary'))
+    markup.row(types.InlineKeyboardButton('⚪ 🔙 Back to Main', callback_data='back_to_main'))
     return markup
 
 def create_subscription_menu():
     markup = types.InlineKeyboardMarkup(row_width=2)
     markup.row(
-        types.InlineKeyboardButton('➕ Add Subscription', callback_data='add_subscription', style='success'),
-        types.InlineKeyboardButton('➖ Remove Subscription', callback_data='remove_subscription', style='danger')
+        types.InlineKeyboardButton('🟢 ➕ Add Subscription', callback_data='add_subscription', style='success'),
+        types.InlineKeyboardButton('🔴 ➖ Remove Subscription', callback_data='remove_subscription', style='danger')
     )
-    markup.row(types.InlineKeyboardButton('🔍 Check Subscription', callback_data='check_subscription', style='primary'))
-    markup.row(types.InlineKeyboardButton('🔙 Back to Main', callback_data='back_to_main'))
+    markup.row(types.InlineKeyboardButton('🔵 🔍 Check Subscription', callback_data='check_subscription', style='primary'))
+    markup.row(types.InlineKeyboardButton('⚪ 🔙 Back to Main', callback_data='back_to_main'))
     return markup
 
 def create_send_command_menu():
     markup = types.InlineKeyboardMarkup(row_width=2)
     markup.row(
-        types.InlineKeyboardButton('📝 Send to Process', callback_data='send_to_process', style='success'),
-        types.InlineKeyboardButton('🔍 View All Logs', callback_data='view_all_logs', style='primary')
+        types.InlineKeyboardButton('🟢 📝 Send to Process', callback_data='send_to_process', style='success'),
+        types.InlineKeyboardButton('🔵 🔍 View All Logs', callback_data='view_all_logs', style='primary')
     )
-    markup.row(types.InlineKeyboardButton('🔙 Back to Main', callback_data='back_to_main'))
+    markup.row(types.InlineKeyboardButton('⚪ 🔙 Back to Main', callback_data='back_to_main'))
     return markup
 # --- End Menu Creation ---
 
@@ -1153,10 +1129,10 @@ def send_to_process_init(message):
     
     markup = types.InlineKeyboardMarkup(row_width=1)
     for script_key, script_info in user_running_scripts:
-        btn_text = f"{script_info['file_name']} (User: {script_info['script_owner_id']})"
+        btn_text = f"🟣 {script_info['file_name']} (User: {script_info['script_owner_id']})"
         markup.add(types.InlineKeyboardButton(btn_text, callback_data=f'sendcmd_select_{script_key}', style='primary'))
     
-    markup.add(types.InlineKeyboardButton("🔙 Back", callback_data='send_command'))
+    markup.add(types.InlineKeyboardButton("⚪ 🔙 Back", callback_data='send_command'))
     bot.reply_to(message, "📝 Select a running script to send command to:", reply_markup=markup)
 
 def process_send_command(message, script_key):
@@ -1207,10 +1183,10 @@ def view_all_logs(message):
     markup = types.InlineKeyboardMarkup(row_width=1)
     for log_file, size, log_path in sorted(user_logs):
         size_kb = size / 1024
-        btn_text = f"{log_file} ({size_kb:.1f} KB)"
+        btn_text = f"🟤 {log_file} ({size_kb:.1f} KB)"
         markup.add(types.InlineKeyboardButton(btn_text, callback_data=f'viewlog_{user_id}_{log_file}', style='primary'))
     
-    markup.add(types.InlineKeyboardButton("🔙 Back", callback_data='send_command'))
+    markup.add(types.InlineKeyboardButton("⚪ 🔙 Back", callback_data='send_command'))
     bot.reply_to(message, "📜 Available Log Files:", reply_markup=markup)
 
 def send_log_file(message, log_path, log_filename):
@@ -1293,7 +1269,7 @@ def _logic_send_welcome(message):
                         f"🤖 Host & run Python (`.py`) or JS (`.js`) scripts.\n"
                         f"   Upload single scripts or `.zip` archives.\n\n"
                         f"👇 Use buttons or type commands.")
-    main_reply_markup = create_reply_keyboard_main_menu(user_id)
+    main_reply_markup = create_main_menu_inline(user_id)
     try:
         if photo_file_id: bot.send_photo(chat_id, photo_file_id)
         bot.send_video(chat_id, video=MENU_VIDEO, caption=welcome_msg_text, reply_markup=main_reply_markup, parse_mode='Markdown')
@@ -1304,7 +1280,7 @@ def _logic_send_welcome(message):
 
 def _logic_updates_channel(message):
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton('📢 Updates Channel', url=UPDATE_CHANNEL, style='primary'))
+    markup.add(types.InlineKeyboardButton('🔴 📢 Updates Channel', url=UPDATE_CHANNEL, style='primary'))
     bot.reply_to(message, "Visit our Updates Channel:", reply_markup=markup)
 
 def _logic_upload_file(message):
@@ -1330,8 +1306,8 @@ def _logic_check_files(message):
     markup = types.InlineKeyboardMarkup(row_width=1)
     for file_name, file_type in sorted(user_files_list):
         is_running = is_bot_running(user_id, file_name)
-        status_icon = "🟢 Running" if is_running else "🔴 Stopped"
-        btn_text = f"{file_name} ({file_type}) - {status_icon}"
+        status_icon = "🟢" if is_running else "🔴"
+        btn_text = f"{status_icon} {file_name} ({file_type})"
         markup.add(types.InlineKeyboardButton(btn_text, callback_data=f'file_{user_id}_{file_name}', style='primary'))
     bot.reply_to(message, "📂 Your files:\nClick to manage.", reply_markup=markup, parse_mode='Markdown')
 
@@ -1358,7 +1334,7 @@ def _logic_bot_speed(message):
 
 def _logic_contact_owner(message):
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton('📞 Contact Owner', url=f'https://t.me/{YOUR_USERNAME.replace("@", "")}', style='primary'))
+    markup.add(types.InlineKeyboardButton('🟣 📞 Contact Owner', url=f'https://t.me/{YOUR_USERNAME.replace("@", "")}', style='primary'))
     bot.reply_to(message, "Click to contact Owner:", reply_markup=markup)
 
 # --- Admin Logic Functions ---
@@ -1492,33 +1468,12 @@ def _logic_run_all_scripts(message_or_call):
     reply_func(summary_msg, parse_mode='Markdown')
     logger.info(f"Run all scripts finished. Admin: {admin_user_id}. Started: {started_count}. Skipped/Errors: {skipped_files}")
 
-# --- Command Handlers & Text Handlers for ReplyKeyboard ---
+# --- Command Handlers (Inline driven) ---
 @bot.message_handler(commands=['start', 'help'])
 def command_send_welcome(message): _logic_send_welcome(message)
 
 @bot.message_handler(commands=['status'])
 def command_show_status(message): _logic_statistics(message)
-
-BUTTON_TEXT_TO_LOGIC = {
-    "📢 Updates Channel": _logic_updates_channel,
-    "📤 Upload File": _logic_upload_file,
-    "📂 Check Files": _logic_check_files,
-    "⚡ Bot Speed": _logic_bot_speed,
-    "📤 Send Command": _logic_send_command,
-    "📞 Contact Owner": _logic_contact_owner,
-    "📊 Statistics": _logic_statistics,
-    "💳 Subscriptions": _logic_subscriptions_panel,
-    "📢 Broadcast": _logic_broadcast_init,
-    "🔒 Lock Bot": _logic_toggle_lock_bot,
-    "🟢 Running All Code": _logic_run_all_scripts,
-    "👑 Admin Panel": _logic_admin_panel,
-}
-
-@bot.message_handler(func=lambda message: message.text in BUTTON_TEXT_TO_LOGIC)
-def handle_button_text(message):
-    logic_func = BUTTON_TEXT_TO_LOGIC.get(message.text)
-    if logic_func: logic_func(message)
-    else: logger.warning(f"Button text '{message.text}' matched but no logic func.")
 
 @bot.message_handler(commands=['updateschannel'])
 def command_updates_channel(message): _logic_updates_channel(message)
@@ -1750,7 +1705,7 @@ def check_files_callback(call):
         bot.answer_callback_query(call.id, "⚠️ No files uploaded.", show_alert=True)
         try:
             markup = types.InlineKeyboardMarkup()
-            markup.add(types.InlineKeyboardButton("🔙 Back to Main", callback_data='back_to_main'))
+            markup.add(types.InlineKeyboardButton("⚪ 🔙 Back to Main", callback_data='back_to_main'))
             bot.edit_message_text("📂 Your files:\n\n(No files uploaded)", chat_id, call.message.message_id, reply_markup=markup)
         except Exception as e: logger.error(f"Error editing msg for empty file list: {e}")
         return
@@ -1758,10 +1713,10 @@ def check_files_callback(call):
     markup = types.InlineKeyboardMarkup(row_width=1) 
     for file_name, file_type in sorted(user_files_list): 
         is_running = is_bot_running(user_id, file_name)
-        status_icon = "🟢 Running" if is_running else "🔴 Stopped"
-        btn_text = f"{file_name} ({file_type}) - {status_icon}"
+        status_icon = "🟢" if is_running else "🔴"
+        btn_text = f"{status_icon} {file_name} ({file_type})"
         markup.add(types.InlineKeyboardButton(btn_text, callback_data=f'file_{user_id}_{file_name}', style='primary'))
-    markup.add(types.InlineKeyboardButton("🔙 Back to Main", callback_data='back_to_main'))
+    markup.add(types.InlineKeyboardButton("⚪ 🔙 Back to Main", callback_data='back_to_main'))
     try:
         bot.edit_message_text("📂 Your files:\nClick to manage.", chat_id, call.message.message_id, reply_markup=markup, parse_mode='Markdown')
     except telebot.apihelper.ApiTelegramException as e:
@@ -2195,8 +2150,8 @@ def process_broadcast_message(message):
 
     target_count = len(active_users)
     markup = types.InlineKeyboardMarkup()
-    markup.row(types.InlineKeyboardButton("✅ Confirm & Send", callback_data=f"confirm_broadcast_{message.message_id}", style='success'),
-               types.InlineKeyboardButton("❌ Cancel", callback_data="cancel_broadcast", style='danger'))
+    markup.row(types.InlineKeyboardButton("🟢 ✅ Confirm & Send", callback_data=f"confirm_broadcast_{message.message_id}", style='success'),
+               types.InlineKeyboardButton("🔴 ❌ Cancel", callback_data="cancel_broadcast", style='danger'))
 
     preview_text = broadcast_content[:1000].strip() if broadcast_content else "(Media message)"
     bot.reply_to(message, f"⚠️ Confirm Broadcast:\n\n```\n{preview_text}\n```\n" 
