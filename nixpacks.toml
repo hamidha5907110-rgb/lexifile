@@ -1,8 +1,13 @@
+# nixpacks.toml for Railway Python Bot
 [phases.setup]
-nixPkgs = ["...", "nodejs_20", "python311"]
+# Specify a Python version compatible with python-telegram-bot v22.7+
+# Python 3.11 or 3.12 is recommended.
+nixPkgs = ["python311"]
 
-[phases.build]
+[phases.install]
+# Nixpacks will automatically create a virtual environment and run this command.
 cmds = ["pip install -r requirements.txt"]
 
 [start]
+# This command starts your bot. Replace 'bot.py' with your script's filename.
 cmd = "python main.py"
