@@ -23,8 +23,7 @@ import mimetypes
 import struct
 
 # --- MAGIC PATCH FOR TELEGRAM BUTTON COLORS ---
-# DeepSeek is correct that `telebot` doesn't natively support the 'style' parameter yet.
-# However, we don't need a full rewrite! We can monkey-patch the library directly.
+# Forces the older telebot library to accept and serialize the native Telegram 'style' parameter.
 _original_init = types.InlineKeyboardButton.__init__
 _original_to_dict = types.InlineKeyboardButton.to_dict
 
@@ -877,7 +876,7 @@ def remove_admin_db(admin_id):
 def create_main_menu_inline(user_id):
     markup = types.InlineKeyboardMarkup(row_width=2)
     buttons = [
-        types.InlineKeyboardButton('📢 Updates Channel', url=UPDATE_CHANNEL, style='primary'),
+        types.InlineKeyboardButton('📢 Updates Channel', url=f'https://t.me/{UPDATE_CHANNEL.replace("@", "")}', style='primary'),
         types.InlineKeyboardButton('📤 Upload File', callback_data='upload', style='primary'),
         types.InlineKeyboardButton('📂 Check Files', callback_data='check_files', style='success'),
         types.InlineKeyboardButton('⚡ Bot Speed', callback_data='speed', style='primary'),
@@ -1151,7 +1150,7 @@ def send_to_process_init(message):
     markup = types.InlineKeyboardMarkup(row_width=1)
     for script_key, script_info in user_running_scripts:
         btn_text = f"{script_info['file_name']} (User: {script_info['script_owner_id']})"
-        markup.add(types.InlineKeyboardButton(btn_text, callback_data=f'sendcmd_select_{script_key}', style='success'))
+        markup.add(types.InlineKeyboardButton(btn_text, callback_data=f'sendcmd_select_{script_key}', style='primary'))
     
     markup.add(types.InlineKeyboardButton("🔙 Back", callback_data='send_command', style='primary'))
     bot.reply_to(message, "📝 Select a running script to send command to:", reply_markup=markup)
@@ -1307,7 +1306,7 @@ def _logic_send_welcome(message):
 
 def _logic_updates_channel(message):
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton('📢 Updates Channel', url=UPDATE_CHANNEL, style='primary'))
+    markup.add(types.InlineKeyboardButton('📢 Updates Channel', url=f'https://t.me/{UPDATE_CHANNEL.replace("@", "")}', style='primary'))
     bot.reply_to(message, "Visit our Updates Channel:", reply_markup=markup)
 
 def _logic_upload_file(message):
