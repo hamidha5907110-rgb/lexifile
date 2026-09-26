@@ -1,13 +1,16 @@
-# nixpacks.toml for Railway Python Bot
-[phases.setup]
-# Specify a Python version compatible with python-telegram-bot v22.7+
-# Python 3.11 or 3.12 is recommended.
-nixPkgs = ["python311"]
+[tool.poetry]
+name = "lexivx-bot"
+version = "1.0.0"
+description = "Telegram Bot"
+authors = ["Admin"]
 
-[phases.install]
-# Nixpacks will automatically create a virtual environment and run this command.
-cmds = ["pip install -r requirements.txt"]
+[tool.poetry.dependencies]
+python = "^3.10"
+python-telegram-bot = "^21.4"
+Flask = "^3.0.0"
+psutil = "^6.0.0"
+requests = "^2.31.0"
 
-[start]
-# This command starts your bot. Replace 'bot.py' with your script's filename.
-cmd = "python main.py"
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
