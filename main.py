@@ -22,6 +22,26 @@ import hashlib
 import mimetypes
 import struct
 
+# --- MAGIC PATCH FOR TELEGRAM BUTTON COLORS ---
+# DeepSeek is correct that `telebot` doesn't natively support the 'style' parameter yet.
+# However, we don't need a full rewrite! We can monkey-patch the library directly.
+_original_init = types.InlineKeyboardButton.__init__
+_original_to_dict = types.InlineKeyboardButton.to_dict
+
+def _new_init(self, *args, **kwargs):
+    self.style = kwargs.pop('style', None)
+    _original_init(self, *args, **kwargs)
+
+def _new_to_dict(self):
+    d = _original_to_dict(self)
+    if getattr(self, 'style', None) is not None:
+        d['style'] = self.style
+    return d
+
+types.InlineKeyboardButton.__init__ = _new_init
+types.InlineKeyboardButton.to_dict = _new_to_dict
+# ----------------------------------------------
+
 # --- Flask Keep Alive ---
 from flask import Flask
 from threading import Thread
@@ -44,7 +64,7 @@ def keep_alive():
 # --- End Flask Keep Alive ---
 
 # --- Configuration ---
-TOKEN = '8653377116:AAEmas_77KamlI6gzVxq-AkajWrJL20qHf8' 
+TOKEN = '8874296819:AAH249JwMBWsIMiIFnNP7XcclbcGLmJpD60' 
 OWNER_ID = 8659378243
 ADMIN_ID = 8659378243
 YOUR_USERNAME = '@lexivx' 
@@ -1088,6 +1108,7 @@ def handle_zip_file(downloaded_file_content, file_name_zip, message):
         if temp_dir and os.path.exists(temp_dir):
             try: shutil.rmtree(temp_dir); logger.info(f"Cleaned temp dir: {temp_dir}")
             except Exception as e: logger.error(f"Failed to clean temp dir {temp_dir}: {e}", exc_info=True)
+
 def handle_js_file(file_path, script_owner_id, user_folder, file_name, message):
     try:
         save_user_file(script_owner_id, file_name, 'js')
@@ -1130,7 +1151,7 @@ def send_to_process_init(message):
     markup = types.InlineKeyboardMarkup(row_width=1)
     for script_key, script_info in user_running_scripts:
         btn_text = f"{script_info['file_name']} (User: {script_info['script_owner_id']})"
-        markup.add(types.InlineKeyboardButton(btn_text, callback_data=f'sendcmd_select_{script_key}', style='primary'))
+        markup.add(types.InlineKeyboardButton(btn_text, callback_data=f'sendcmd_select_{script_key}', style='success'))
     
     markup.add(types.InlineKeyboardButton("🔙 Back", callback_data='send_command', style='primary'))
     bot.reply_to(message, "📝 Select a running script to send command to:", reply_markup=markup)
@@ -1314,7 +1335,8 @@ def _logic_check_files(message):
         is_running = is_bot_running(user_id, file_name)
         status_icon = "🟢" if is_running else "🔴"
         btn_text = f"{status_icon} {file_name} ({file_type})"
-        markup.add(types.InlineKeyboardButton(btn_text, callback_data=f'file_{user_id}_{file_name}', style='primary'))
+        style = 'success' if is_running else 'danger'
+        markup.add(types.InlineKeyboardButton(btn_text, callback_data=f'file_{user_id}_{file_name}', style=style))
     bot.reply_to(message, "📂 Your files:\nClick to manage.", reply_markup=markup, parse_mode='Markdown')
 
 def _logic_bot_speed(message):
@@ -1721,7 +1743,8 @@ def check_files_callback(call):
         is_running = is_bot_running(user_id, file_name)
         status_icon = "🟢" if is_running else "🔴"
         btn_text = f"{status_icon} {file_name} ({file_type})"
-        markup.add(types.InlineKeyboardButton(btn_text, callback_data=f'file_{user_id}_{file_name}', style='primary'))
+        style = 'success' if is_running else 'danger'
+        markup.add(types.InlineKeyboardButton(btn_text, callback_data=f'file_{user_id}_{file_name}', style=style))
     markup.add(types.InlineKeyboardButton("🔙 Back to Main", callback_data='back_to_main', style='primary'))
     try:
         bot.edit_message_text("📂 Your files:\nClick to manage.", chat_id, call.message.message_id, reply_markup=markup, parse_mode='Markdown')
