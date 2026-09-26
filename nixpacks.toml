@@ -6,7 +6,7 @@ authors = ["Admin"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-python-telegram-bot = "^21.4"
+python-telegram-bot = "^22.8"
 Flask = "^3.0.0"
 psutil = "^6.0.0"
 requests = "^2.31.0"
