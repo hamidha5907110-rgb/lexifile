@@ -1,4 +1,4 @@
-python-telegram-bot>=22.8
+pyTelegramBotAPI
 Flask>=3.0.0
 psutil>=6.0.0
 requests>=2.31.0
