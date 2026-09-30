@@ -3,6 +3,8 @@ nixPkgs = ["nodejs_20", "python311Full", "gcc", "gnumake", "openssl"]
 
 [phases.install]
 cmds = [
+  "curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py",
+  "python3.11 get-pip.py --break-system-packages",
   "python3.11 -m pip install --upgrade pip",
   "python3.11 -m pip install -r requirements.txt"
 ]
