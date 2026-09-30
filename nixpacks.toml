@@ -8,4 +8,4 @@ cmds = [
 ]
 
 [start]
-cmd = "python3.11 bot.py"
+cmd = "python3.11 main.py"
