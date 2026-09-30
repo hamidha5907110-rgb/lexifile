@@ -1,12 +1,11 @@
 [phases.setup]
-nixPkgs = ["nodejs_20", "python311", "gcc", "gnumake", "openssl"]
+nixPkgs = ["nodejs_20", "python311Full", "gcc", "gnumake", "openssl"]
 
 [phases.install]
 cmds = [
-  "python3.11 -m ensurepip --upgrade",
-  "python3.11 -m pip install --upgrade pip",
-  "python3.11 -m pip install -r requirements.txt"
+  "pip install --upgrade pip",
+  "pip install -r requirements.txt"
 ]
 
 [start]
-cmd = "python3.11 main.py"
+cmd = "python main.py"
