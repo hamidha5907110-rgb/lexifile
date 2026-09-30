@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["nodejs_20", "npm", "python311", "gcc", "gnumake", "openssl"]
+nixPkgs = ["nodejs_20", "python311", "gcc", "gnumake", "openssl"]
 
 [phases.install]
 cmds = ["pip install --upgrade pip", "pip install -r requirements.txt"]
