@@ -94,6 +94,19 @@ def _patched_ikb_to_dict(self):
 
 types.InlineKeyboardButton.__init__ = _patched_ikb_init
 types.InlineKeyboardButton.to_dict = _patched_ikb_to_dict
+
+def strip_styles(markup):
+    """Remove 'style' attribute from every button so Telegram accepts the markup on old Bot API versions."""
+    if not markup:
+        return markup
+    try:
+        for row in markup.keyboard:
+            for btn in row:
+                if hasattr(btn, 'style'):
+                    btn.style = None
+    except Exception as e:
+        logger.warning(f"strip_styles failed: {e}")
+    return markup
 # --- End colored inline button support ---
 
 # --- Data structures ---
@@ -1324,34 +1337,57 @@ def _logic_send_welcome(message):
                         f"   Upload single scripts or `.zip` archives.\n\n"
                         f"👇 Use the colored buttons below.")
 
-    main_inline_markup = create_main_menu_inline(user_id)
-
-    # Try video first, then photo, then plain text — inline menu ALWAYS attaches
+    # ---- Try sending with colored styles first, then fall back to plain ----
     sent = False
+
+    # Attempt 1: video with colored buttons
     if MENU_VIDEO and MENU_VIDEO != 'YOUR_VIDEO_URL_OR_FILE_ID':
         try:
             bot.send_video(chat_id, video=MENU_VIDEO, caption=welcome_msg_text,
-                           reply_markup=main_inline_markup, parse_mode='Markdown')
+                           reply_markup=create_main_menu_inline(user_id), parse_mode='Markdown')
             sent = True
+            logger.info("Welcome sent via video (colored).")
         except Exception as e:
-            logger.warning(f"send_video failed: {e}")
+            logger.warning(f"send_video with colors failed: {e}")
 
+    # Attempt 2: text/photo with colored buttons
     if not sent:
         try:
             if photo_file_id:
                 bot.send_photo(chat_id, photo_file_id, caption=welcome_msg_text,
-                               reply_markup=main_inline_markup, parse_mode='Markdown')
+                               reply_markup=create_main_menu_inline(user_id), parse_mode='Markdown')
             else:
                 bot.send_message(chat_id, welcome_msg_text,
-                                 reply_markup=main_inline_markup, parse_mode='Markdown')
+                                 reply_markup=create_main_menu_inline(user_id), parse_mode='Markdown')
+            sent = True
+            logger.info("Welcome sent via text/photo (colored).")
+        except Exception as e:
+            logger.warning(f"Colored markup rejected by Telegram: {e}")
+
+    # Attempt 3: strip styles and retry
+    if not sent:
+        try:
+            plain_markup = strip_styles(create_main_menu_inline(user_id))
+            if photo_file_id:
+                bot.send_photo(chat_id, photo_file_id, caption=welcome_msg_text,
+                               reply_markup=plain_markup, parse_mode='Markdown')
+            else:
+                bot.send_message(chat_id, welcome_msg_text,
+                                 reply_markup=plain_markup, parse_mode='Markdown')
+            sent = True
+            logger.info("Welcome sent with plain (uncolored) inline buttons.")
+        except Exception as e:
+            logger.error(f"Fallback plain-inline welcome failed: {e}", exc_info=True)
+
+    # Attempt 4: absolute last resort — no parse_mode
+    if not sent:
+        try:
+            plain_markup = strip_styles(create_main_menu_inline(user_id))
+            bot.send_message(chat_id, "Welcome! Here is your menu:",
+                             reply_markup=plain_markup)
             sent = True
         except Exception as e:
-            logger.error(f"Fallback welcome failed: {e}", exc_info=True)
-
-    if not sent:
-        # Absolute last resort — no parse_mode to avoid markdown crashes
-        bot.send_message(chat_id, "Welcome! Use /start again.",
-                         reply_markup=main_inline_markup)
+            logger.error(f"Absolute last resort welcome failed: {e}", exc_info=True)
 
 def _logic_updates_channel(message):
     markup = types.InlineKeyboardMarkup()
@@ -2168,9 +2204,18 @@ def back_to_main_callback(call):
     try:
         bot.answer_callback_query(call.id)
         bot.delete_message(chat_id, call.message.message_id)
+    except Exception:
+        pass
+    # Try with colors first, fall back to plain
+    try:
         bot.send_message(chat_id, main_menu_text, reply_markup=create_main_menu_inline(user_id), parse_mode='Markdown')
     except Exception as e:
-        logger.error(f"Error handling back_to_main: {e}", exc_info=True)
+        logger.warning(f"back_to_main colored markup rejected: {e}")
+        try:
+            plain_markup = strip_styles(create_main_menu_inline(user_id))
+            bot.send_message(chat_id, main_menu_text, reply_markup=plain_markup, parse_mode='Markdown')
+        except Exception as e2:
+            logger.error(f"back_to_main plain markup failed: {e2}", exc_info=True)
 
 # --- Admin Callback Implementations ---
 def subscription_management_callback(call):
