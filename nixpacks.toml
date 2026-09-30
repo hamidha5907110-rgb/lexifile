@@ -1,13 +1,13 @@
 [phases.setup]
-nixPkgs = ["nodejs_20", "python311Full", "gcc", "gnumake", "openssl"]
+nixPkgs = ["nodejs_20", "python311", "gcc", "gnumake", "openssl"]
 
 [phases.install]
 cmds = [
-  "curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py",
-  "python3.11 get-pip.py --break-system-packages",
-  "python3.11 -m pip install --upgrade pip",
-  "python3.11 -m pip install -r requirements.txt"
+  "python3.11 -m venv /opt/venv",
+  ". /opt/venv/bin/activate",
+  "pip install --upgrade pip",
+  "pip install -r requirements.txt"
 ]
 
 [start]
-cmd = "python3.11 main.py"
+cmd = ". /opt/venv/bin/activate && python3.11 main.py"
