@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.pyo
+*.log
+.env
+venv/
+.venv/
+inf/
+upload_bots/
+node_modules/
+*.db
