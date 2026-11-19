@@ -44,9 +44,9 @@ def keep_alive():
 # --- End Flask Keep Alive ---
 
 # --- Configuration ---
-TOKEN = '8653377116:AAGOlJ5FP_3ki_kWAJJG1_t0OoeoYwk0kKY'
-OWNER_ID = 8659378243
-ADMIN_ID = 8659378243
+TOKEN = '9071346261:AAGU18nBN9NWZrknk6v6oLFLxMK_hRoEHP0'
+OWNER_ID =8684812026
+ADMIN_ID = 8684812026
 YOUR_USERNAME = '@lexivx'
 UPDATE_CHANNEL = '@lexivs'
 MENU_VIDEO = 'YOUR_VIDEO_URL_OR_FILE_ID'  # Replace with a valid video URL or file_id
