@@ -48,7 +48,7 @@ TOKEN = '9071346261:AAGU18nBN9NWZrknk6v6oLFLxMK_hRoEHP0'
 OWNER_ID =8684812026
 ADMIN_ID = 8684812026
 YOUR_USERNAME = '@lexivx'
-UPDATE_CHANNEL = '@lexivs'
+UPDATE_CHANNEL = '@sidxrebelfileupload
 MENU_VIDEO = 'YOUR_VIDEO_URL_OR_FILE_ID'  # Replace with a valid video URL or file_id
 
 # Folder setup - using absolute paths
